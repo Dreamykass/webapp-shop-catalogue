@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1" name="viewport" />
-    <title>Hello Bulma!</title>
+    <title>Shop catalogue app!</title>
     <link
       href="https://jenil.github.io/bulmaswatch/cyborg/bulmaswatch.min.css"
       rel="stylesheet"
@@ -11,10 +11,10 @@
   </head>
 
   <script>
-    var category = "all";
-    var producer = "all";
-    var order = "id";
-    var order2 = "asc";
+    let category = "all";
+    let producer = "all";
+    let order = "id";
+    let order2 = "asc";
 
     function onLoadSidepanelSelectedRefresh() {
       document.getElementById("categories_list_selected").innerHTML = category;
@@ -105,32 +105,43 @@
 
       onLoadSidepanelSelectedRefresh();
 
-      // actual request
-      {
-        const xhttp = new XMLHttpRequest();
-        xhttp.onreadystatechange = function () {
-          if (this.readyState === 4 && this.status === 200) {
-            // window.alert(this.responseText);
-            const json = JSON.parse(this.responseText);
-            json.forEach((item) => {
-              mainpanel.innerHTML += `<div class="box" onclick="detailed(${item.id})">
-                <h3>${item.name}</h3> <h4>${item.price}PLN</h4>
-                <img src='http://localhost:8000/media/${item.photo_filename}' alt=''/>
+      const xhttp = new XMLHttpRequest();
+      xhttp.onreadystatechange = function () {
+        if (this.readyState === 4 && this.status === 200) {
+          let images = `<div class="columns is-multiline">`;
+          // window.alert(this.responseText);
+          const json = JSON.parse(this.responseText);
+          json.forEach((item) => {
+            images += `
+                <div
+                  class="box column is-one-quarter-desktop is-half-tablet" 
+                  onclick="detailed(${item.id})"
+                >
+                  <div class="card">
+                    <h3>${item.name}</h3> <h4>${item.price}€$</h4>
+                    <div class="card-image">
+                      <figure class="image is-3by2">
+                        <img src='http://localhost:8000/media/${item.photo_filename}' alt=''/>
+                      </figure>
+                    </div>
+                  </div>
                 </div>`;
-            });
-          }
-        };
+          });
 
-        if (category === "") category = "all";
-        if (producer === "") category = "all";
+          images += `</div>`;
+          mainpanel.innerHTML += images;
+        }
+      };
 
-        xhttp.open(
-          "GET",
-          `http://localhost:8000/all?category=${category}&producer=${producer}&order=${order}&order2=${order2}`,
-          true
-        );
-        xhttp.send();
-      }
+      if (category === "") category = "all";
+      if (producer === "") category = "all";
+
+      xhttp.open(
+        "GET",
+        `http://localhost:8000/all?category=${category}&producer=${producer}&order=${order}&order2=${order2}`,
+        true
+      );
+      xhttp.send();
     }
 
     function detailed(id) {
@@ -179,8 +190,13 @@
     <section class="section content">
       <section class="hero">
         <div class="container">
-          <h1 class="title">Hello World</h1>
-          <p class="subtitle">My first website with <strong>Bulma</strong>!</p>
+          <h1 class="title">Shop catalogue app!</h1>
+          <p class="subtitle">
+            This is a <strong>simple small</strong>shop catalogue webapp. It is
+            just a single-page.
+            <br />
+            <br />
+          </p>
         </div>
       </section>
     </section>

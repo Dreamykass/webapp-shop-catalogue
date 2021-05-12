@@ -3,8 +3,8 @@
 A tiny and simple single-page catalogue of albums for a music shop, that I made for a university assignment.
 
 # Technologies
-- Back: Rocket (Rust)
-- Front: mostly raw JS, AJAX for requests, Bulma for CSS
+- Back: Rocket (Rust), rusqlite for database (also Rust)
+- Front: mostly raw JS, AJAX for requests (also JS), Bulma for CSS
 
 # Showcase gif
 ![showcase gif](showcase.gif)

@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1" name="viewport" />
+    <title>Hello Bulma!</title>
+    <link
+      href="https://jenil.github.io/bulmaswatch/cyborg/bulmaswatch.min.css"
+      rel="stylesheet"
+    />
+  </head>
+
+  <script>
+    var category = "all";
+    var producer = "all";
+    var order = "id";
+    var order2 = "asc";
+
+    function onLoadSidepanelSelectedRefresh() {
+      document.getElementById("categories_list_selected").innerHTML = category;
+      document.getElementById("producers_list_selected").innerHTML = producer;
+      document.getElementById("order_list_selected").innerHTML =
+        order + "/" + order2;
+    }
+
+    function onLoadSidepanelFiltering() {
+      let sidepanel = document.getElementById("sidepanel");
+      sidepanel.innerHTML = "";
+
+      sidepanel.innerHTML = `<div class="box">
+                <p><h3>Category: </h3>
+                <h5 id="categories_list_selected">Selected: ${category}</h5>
+                <div id="categories_list"></div>
+                </p>
+                <p><h3>Producer: </h3>
+                <h5 id="producers_list_selected">Selected: ${producer}</h5>
+                <div id="producers_list"></div>
+                </p>
+                <p><h3>Ordered by: </h3>
+                <h5 id="order_list_selected">Selected: ${order}/${order2}</h5>
+                <div id="order_list"></div>
+                </p>
+                </div>`;
+
+      // categories:
+      {
+        const cat = document.getElementById("categories_list");
+        const xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function () {
+          if (this.readyState === 4 && this.status === 200) {
+            const json = JSON.parse(this.responseText);
+            json.forEach((item) => {
+              cat.innerHTML += `
+                    <input type="button" class="button" onclick="category = '${item}'; onLoad();" value="${item}">
+                    `;
+            });
+            cat.innerHTML += `
+                    <input type="button" class="button" onclick="category = 'all'; onLoad();" value="...all">
+                    `;
+          }
+        };
+        xhttp.open("GET", "http://localhost:8000/categories", true);
+        xhttp.send();
+      }
+
+      // producers:
+      {
+        const prod = document.getElementById("producers_list");
+        const xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function () {
+          if (this.readyState === 4 && this.status === 200) {
+            const json = JSON.parse(this.responseText);
+            json.forEach((item) => {
+              prod.innerHTML += `
+                    <input type="button" class="button" onclick="producer = '${item}'; onLoad();" value="${item}">
+                    `;
+            });
+            prod.innerHTML += `
+                    <input type="button" class="button" onclick="producer = 'all'; onLoad();" value="...all">
+                    `;
+          }
+        };
+        xhttp.open("GET", "http://localhost:8000/producers", true);
+        xhttp.send();
+      }
+
+      // order:
+      {
+        const ord = document.getElementById("order_list");
+        ord.innerHTML += `<input type="button" class="button" onclick="order = 'id'; onLoad();" value="Id">`;
+        ord.innerHTML += `<input type="button" class="button" onclick="order = 'category'; onLoad();" value="Category">`;
+        ord.innerHTML += `<input type="button" class="button" onclick="order = 'producer'; onLoad();" value="Producer">`;
+        ord.innerHTML += `<input type="button" class="button" onclick="order = 'name'; onLoad();" value="Name">`;
+        ord.innerHTML += `<input type="button" class="button" onclick="order = 'price'; onLoad();" value="Price">`;
+        ord.innerHTML += `<br>`;
+        ord.innerHTML += `<br>`;
+        ord.innerHTML += `<input type="button" class="button" onclick="order2 = 'asc'; onLoad();" value="Ascending">`;
+        ord.innerHTML += `<input type="button" class="button" onclick="order2 = 'desc'; onLoad();" value="Descending">`;
+      }
+    }
+
+    function onLoad() {
+      let mainpanel = document.getElementById("mainpanel");
+      mainpanel.innerHTML = "";
+
+      onLoadSidepanelSelectedRefresh();
+
+      // actual request
+      {
+        const xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function () {
+          if (this.readyState === 4 && this.status === 200) {
+            // window.alert(this.responseText);
+            const json = JSON.parse(this.responseText);
+            json.forEach((item) => {
+              mainpanel.innerHTML += `<div class="box" onclick="detailed(${item.id})">
+                <h3>${item.name}</h3> <h4>${item.price}PLN</h4>
+                <img src='http://localhost:8000/media/${item.photo_filename}' alt=''/>
+                </div>`;
+            });
+          }
+        };
+
+        if (category === "") category = "all";
+        if (producer === "") category = "all";
+
+        xhttp.open(
+          "GET",
+          `http://localhost:8000/all?category=${category}&producer=${producer}&order=${order}&order2=${order2}`,
+          true
+        );
+        xhttp.send();
+      }
+    }
+
+    function detailed(id) {
+      let mainpanel = document.getElementById("mainpanel");
+      let sidepanel = document.getElementById("sidepanel");
+
+      sidepanel.innerHTML = `<div class="box" onclick="onLoadSidepanelFiltering(); onLoad()"><button class="button">Go back!</button></div>`;
+      mainpanel.innerHTML = "<h1>Waiting...</h1>";
+
+      const xhttp = new XMLHttpRequest();
+      xhttp.onreadystatechange = function () {
+        if (this.readyState === 4 && this.status === 200) {
+          const json = JSON.parse(this.responseText);
+          mainpanel.innerHTML = `<div class="box content">
+                <h1>${json.name}</h1>
+                <img src='http://localhost:8000/media/${json.photo_filename}' alt=''/><br>
+                <sup>Photo description: ${json.photo_description}</sup><br><br><br>
+                <h4>Album description:</h4>
+                <p>${json.description}</p><br><br>
+                <h4>Price: ${json.price}PLN</h4>
+                <h4>Producer: ${json.producer}</h4>
+                <h4>Category: ${json.category}</h4>
+                </div>`;
+        }
+      };
+      xhttp.open("GET", `http://localhost:8000/detailed/${id}`, true);
+      xhttp.send();
+    }
+  </script>
+
+  <body onload="onLoadSidepanelFiltering(); onLoad()">
+    <nav aria-label="main navigation" class="navbar" role="navigation">
+      <div class="navbar-brand">
+        <a class="navbar-item" onclick="onLoadSidepanelFiltering(); onLoad()">
+          Shop catalogue app!
+        </a>
+        <a class="navbar-item" onclick="onLoadSidepanelFiltering(); onLoad()">
+          Shop catalogue app!
+        </a>
+        <a class="navbar-item" onclick="onLoadSidepanelFiltering(); onLoad()">
+          Shop catalogue app!
+        </a>
+      </div>
+    </nav>
+
+    <section class="section content">
+      <section class="hero">
+        <div class="container">
+          <h1 class="title">Hello World</h1>
+          <p class="subtitle">My first website with <strong>Bulma</strong>!</p>
+        </div>
+      </section>
+    </section>
+
+    <section class="section content">
+      <div class="columns">
+        <div class="column is-one-quarter" id="sidepanel"></div>
+        <div class="column">
+          <section id="mainpanel"></section>
+        </div>
+      </div>
+    </section>
+  </body>
+</html>
